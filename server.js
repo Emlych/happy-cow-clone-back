@@ -9,7 +9,8 @@ const app = express();
 app.use(formidable());
 app.use(cors());
 
-mongoose.connect("mongodb://localhost/happy-cow");
+// mongoose.connect("mongodb://localhost/happy-cow");
+mongoose.connect(process.env.MONGODB_URI);
 
 //import routes
 const userRoutes = require("./routes/user");
