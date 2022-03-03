@@ -72,5 +72,20 @@ router.get("/favorites", isAuthenticated, async (req, res) => {
 });
 
 //Delete favorite
+router.delete("/favorite/delete", isAuthenticated, async (req, res) => {
+  console.log("route: /favorite/delete");
+  try {
+    const favorite = await Favorite.findOne({ placeId: req.fields.placeId });
+    console.log("here is my favorite ==>", favorite);
+    if (!favorite) {
+      res.status(400).json({ error: { message: "No item to favor" } });
+    } else {
+      await Favorite.findByIdAndDelete(favorite._id);
+      res.json({ message: "Favorite restaurant deleted" });
+    }
+  } catch (error) {
+    res.status(400).json({ error: error });
+  }
+});
 
 module.exports = router;
