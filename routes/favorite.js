@@ -8,13 +8,14 @@ const User = require("../models/User");
 
 //User connected (token exists)
 const isAuthenticated = async (req, res, next) => {
-  console.log("req headers : ", req.headers);
   const tokenRegistered = req.headers.authorization;
+  //   const tokenRegistered = req.query.userToken;
   console.log("token registered ==>", tokenRegistered);
   if (tokenRegistered) {
     console.log("here is the registered token ==>", tokenRegistered);
     const isTokenValid = await User.findOne({
       token: tokenRegistered.replace("Bearer ", ""),
+      //   token: tokenRegistered,
     });
     if (isTokenValid) {
       console.log("Valid token, authorized to create an offer");
@@ -30,7 +31,9 @@ const isAuthenticated = async (req, res, next) => {
 //Create new favorite
 router.post("/favorite/add", isAuthenticated, async (req, res) => {
   console.log("route: /favorite/add");
+  console.log("query ==>", req.query);
   const tokenUser = req.headers.authorization.replace("Bearer ", "");
+  //   const tokenUser = req.query.userToken;
   const targetUser = await User.findOne({ token: tokenUser });
   const targetUserId = targetUser._id;
   try {
@@ -61,9 +64,9 @@ router.post("/favorite/add", isAuthenticated, async (req, res) => {
 router.get("/favorites", isAuthenticated, async (req, res) => {
   console.log("route: /favorites");
   const tokenUser = req.headers.authorization.replace("Bearer ", "");
+  //   const tokenUser = req.query.userToken;
   const targetUser = await User.findOne({ token: tokenUser });
   const targetUserId = targetUser._id;
-
   const favorites = await Favorite.find({ userId: targetUserId });
   res.json({ message: "The favorites have been loaded", favorites: favorites });
 });
