@@ -8,8 +8,8 @@ const app = express();
 app.use(formidable());
 app.use(cors());
 
-// mongoose.connect("mongodb://localhost/happy-cow");
 mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost/happy-cow");
+//mongoose.connect("mongodb://localhost/happy-cow");
 
 //import routes
 const userRoutes = require("./routes/user");
