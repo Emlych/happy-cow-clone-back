@@ -29,7 +29,6 @@ const isAuthenticated = async (req, res, next) => {
 //Create new favorite
 router.post("/favorite/add", isAuthenticated, async (req, res) => {
   console.log("route: /favorite/add");
-  console.log("query ==>", req.query);
   const tokenUser = req.headers.authorization.replace("Bearer ", "");
   const targetUser = await User.findOne({ token: tokenUser });
   const targetUserFavorites = targetUser.favorite;
@@ -65,20 +64,25 @@ router.get("/favorites", isAuthenticated, async (req, res) => {
 });
 
 //Delete favorite
-// router.delete("/favorite/delete", isAuthenticated, async (req, res) => {
-//   console.log("route: /favorite/delete");
-//   try {
-//     const favorite = await Favorite.findOne({ placeId: req.fields.placeId });
-//     console.log("here is my favorite ==>", favorite);
-//     if (!favorite) {
-//       res.status(400).json({ error: { message: "No item to favor" } });
-//     } else {
-//       await Favorite.findByIdAndDelete(favorite._id);
-//       res.json({ message: "Favorite restaurant deleted" });
-//     }
-//   } catch (error) {
-//     res.status(400).json({ error: error });
-//   }
-// });
+router.delete("/favorite/delete", isAuthenticated, async (req, res) => {
+  console.log("route: /favorite/delete");
+  const tokenUser = req.headers.authorization.replace("Bearer ", "");
+  try {
+    const targetUser = await User.findOne({ token: tokenUser });
+    console.log("target user:", targetUser);
+    const targetUserFavorites = targetUser.favorite;
+    if (!targetUserFavorites.includes(req.fields.placeId)) {
+      res.json({ message: "this favorite would be added" });
+    } else {
+      console.log("placeId to delete is : ", req.fields.placeId);
+      targetUserFavorites.filter((element) => element != req.fields.placeId);
+      console.log("target user favorites ==>", targetUserFavorites);
+      await targetUser.save();
+      res.json({ message: "Favorite deleted", targetUser });
+    }
+  } catch (error) {
+    res.status(400).json({ error: error });
+  }
+});
 
 module.exports = router;
