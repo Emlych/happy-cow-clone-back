@@ -26,16 +26,24 @@ const isAuthenticated = async (req, res, next) => {
   }
 };
 
-//Create new favorite
-router.post("/favorite/add", isAuthenticated, async (req, res) => {
-  console.log("route: /favorite/add");
+//Create new favorite or delete it
+router.post("/favorite/handle", isAuthenticated, async (req, res) => {
+  console.log("route: /favorite/handle");
   const tokenUser = req.headers.authorization.replace("Bearer ", "");
   const targetUser = await User.findOne({ token: tokenUser });
   const targetUserFavorites = targetUser.favorite;
   try {
+    //if already exist, delete favorite
     if (targetUserFavorites.includes(req.fields.placeId)) {
-      res.json({ message: "this favorite already exists" });
-    } else {
+      targetUserFavorites.splice(
+        targetUserFavorites.indexOf(req.fields.placeId),
+        1
+      );
+      await targetUser.save();
+      res.json({ message: "Favorite deleted", targetUser });
+    }
+    //if not, add favorite
+    else {
       targetUserFavorites.push(req.fields.placeId);
       await targetUser.save();
       res.json({ message: "New favorite registered", targetUser });
@@ -64,25 +72,25 @@ router.get("/favorites", isAuthenticated, async (req, res) => {
 });
 
 //Delete favorite
-router.delete("/favorite/delete", isAuthenticated, async (req, res) => {
-  console.log("route: /favorite/delete");
-  const tokenUser = req.headers.authorization.replace("Bearer ", "");
-  try {
-    const targetUser = await User.findOne({ token: tokenUser });
-    console.log("target user:", targetUser);
-    const targetUserFavorites = targetUser.favorite;
-    if (!targetUserFavorites.includes(req.fields.placeId)) {
-      res.json({ message: "this favorite would be added" });
-    } else {
-      console.log("placeId to delete is : ", req.fields.placeId);
-      targetUserFavorites.filter((element) => element != req.fields.placeId);
-      console.log("target user favorites ==>", targetUserFavorites);
-      await targetUser.save();
-      res.json({ message: "Favorite deleted", targetUser });
-    }
-  } catch (error) {
-    res.status(400).json({ error: error });
-  }
-});
+// router.delete("/favorite/delete", isAuthenticated, async (req, res) => {
+//   console.log("route: /favorite/delete");
+//   const tokenUser = req.headers.authorization.replace("Bearer ", "");
+//   try {
+//     const targetUser = await User.findOne({ token: tokenUser });
+//     const targetUserFavorites = targetUser.favorite;
+//     if (!targetUserFavorites.includes(req.fields.placeId)) {
+//       res.json({ message: "this favorite would be added" });
+//     } else {
+//       targetUserFavorites.splice(
+//         targetUserFavorites.indexOf(req.fields.placeId),
+//         1
+//       );
+//       await targetUser.save();
+//       res.json({ message: "Favorite deleted", targetUser });
+//     }
+//   } catch (error) {
+//     res.status(400).json({ error: error });
+//   }
+// });
 
 module.exports = router;
